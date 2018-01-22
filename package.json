@@ -1,0 +1,26 @@
+{
+  "name": "redux-store-list",
+  "version": "0.1.0",
+  "description": "Set of utilities for quickly creating lists of entities, along with reducers, types, and action creators",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZarkoPernar/redux-store-list.git"
+  },
+  "keywords": [
+    "redux",
+    "ngrx"
+  ],
+  "author": "Zarko Pernar <zarko.pernar@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ZarkoPernar/redux-store-list/issues"
+  },
+  "homepage": "https://github.com/ZarkoPernar/redux-store-list#readme",
+  "devDependencies": {
+    "jest": "^22.1.4"
+  }
+}
