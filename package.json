@@ -1,6 +1,6 @@
 {
     "name": "redux-store-list",
-    "version": "0.1.6",
+    "version": "0.1.8",
     "description":
         "Set of utilities for quickly creating lists of entities, along with reducers, types, and action creators",
     "main": "redux-store-list.cjs.js",
@@ -43,7 +43,7 @@
         "transform": {
             "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
         },
-        "testMatch": ["<rootDir>/src/**/*.spec.ts"]
+        "testMatch": ["<rootDir>/lib/**/*.spec.ts"]
     },
     "dependencies": {
         "reselect": "^3.0.1"

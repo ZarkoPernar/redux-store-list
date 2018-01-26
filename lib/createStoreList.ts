@@ -78,7 +78,7 @@ export interface IStoreListPage<T> {
     selector: Function
 }
 
-const defaultRootState = { byId: {} }
+const defaultRootState = { byId: {}, allIds: [] }
 
 export function createStoreList<T>(name: string, options: IOptions = {}) {
     // const symbol = Symbol(name)
@@ -91,16 +91,16 @@ export function createStoreList<T>(name: string, options: IOptions = {}) {
     const selector = createStoreListSelector(name, options.rootName)
 
     const pages: IStoreListPages<T> = options.pages
-        ? options.pages.reduce((acc, pageOption) => {
-              const pageName = getPageName(pageOption)
-              const pageType = getPageType(pageOption)
+        ? options.pages.reduce((acc, page) => {
+              const pageName = getPageName(page)
+              const pageType = getPageType(page)
 
               return {
                   ...acc,
                   [pageName]:
                       pageType === 'list'
                           ? createStoreListPage<T>(
-                                pageOption,
+                                page,
                                 name,
                                 defaultState,
                                 options,
@@ -118,7 +118,12 @@ export function createStoreList<T>(name: string, options: IOptions = {}) {
         name,
         types,
         selector,
-        reducer,
+        reducer: options.pages
+            ? reducer
+            : createStoreListPageReducer('default', types, {
+                  hasPages: false,
+                  defaultState,
+              }),
         actionCreators,
         pages,
     }
@@ -159,8 +164,18 @@ export function createStoreListPage<T>(
     }
 }
 
+// export interface IDefaultStateWithPages<T> {
+//     byId: {
+//         [id: string | number]: T
+//     }
+//     pages: {
+//         [pageName: string]: {
+//             allIds: string[] | number[]
+//         }
+//     }
+// }
 export function createDefaultStateWithPages(
-    pagesOption: Array<string | IPageOption> = [],
+    pagesOption: Array<string | IPageOption> = [], //: IDefaultStateWithPages<T>
 ) {
     const pages: {
         [pageName: string]: {
