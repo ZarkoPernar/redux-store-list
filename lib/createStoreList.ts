@@ -80,10 +80,7 @@ export interface IStoreListPage<T> {
 
 const defaultRootState = { byId: {} }
 
-export default function createStoreList<T>(
-    name: string,
-    options: IOptions = {},
-) {
+export function createStoreList<T>(name: string, options: IOptions = {}) {
     // const symbol = Symbol(name)
     const defaultState = options.pages
         ? createDefaultStateWithPages(options.pages)

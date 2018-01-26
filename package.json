@@ -1,12 +1,19 @@
 {
     "name": "redux-store-list",
-    "version": "0.1.4",
+    "version": "0.1.6",
     "description":
         "Set of utilities for quickly creating lists of entities, along with reducers, types, and action creators",
-    "main": "index.js",
+    "main": "redux-store-list.cjs.js",
+    "jsnext:main": "redux-store-list.esm.js",
+    "module": "redux-store-list.esm.js",
+    "types": "redux-store-list.d.ts",
     "scripts": {
-        "test": "jest --watch",
-        "build": "tsc"
+        "copy": "node tools/copy-package.js",
+        "bundle":
+            "rimraf dist && rollup -c rollup.config.cjs.js && rollup -c rollup.config.esm.js",
+        "build": "npm run bundle && npm run copy",
+        "publish": "cd ./dist && npm publish",
+        "test": "jest --watch"
     },
     "repository": {
         "type": "git",
@@ -25,6 +32,9 @@
     "devDependencies": {
         "@types/jest": "^22.0.1",
         "jest": "^22.1.4",
+        "rollup-plugin-commonjs": "^8.2.6",
+        "rollup-plugin-node-resolve": "^3.0.2",
+        "rollup-plugin-typescript": "^0.8.1",
         "ts-jest": "^22.0.1",
         "typescript": "^2.6.2"
     },
