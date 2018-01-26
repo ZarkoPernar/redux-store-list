@@ -1,33 +1,6 @@
 import { createSelector } from 'reselect'
-import {
-    LOAD_LIST,
-    LOAD_LIST_SUCCESS,
-    LOAD_LIST_FAILURE,
-    LOAD_ITEM,
-    LOAD_ITEM_SUCCESS,
-    LOAD_ITEM_FAILURE,
-    ADD,
-    ADD_SUCCESS,
-    ADD_FAILURE,
-    UPDATE,
-    UPDATE_SUCCESS,
-    UPDATE_FAILURE,
-    TRASH,
-    TRASH_SUCCESS,
-    TRASH_FAILURE,
-    RESTORE,
-    RESTORE_SUCCESS,
-    RESTORE_FAILURE,
-    REMOVE,
-    REMOVE_SUCCESS,
-    REMOVE_FAILURE,
-} from './createStoreListActions'
+
 import { createStoreListTypes, IActionTypes } from './createStoreListTypes'
-import {
-    IActions,
-    createStoreListActionCreators,
-} from './createStoreListActions'
-import { createStoreListReducer } from './createStoreListReducer'
 
 import { createStoreListSelector } from './store.utils'
 import { createStoreListPageReducer } from './createStoreListPageReducer'
@@ -35,6 +8,8 @@ import { createStoreListPageReducer } from './createStoreListPageReducer'
 import { createCombinedReducer } from './createCombinedReducer'
 import { createStoreItem } from './createStoreItem'
 import { fromStoreList } from './store.utils'
+import { createEpic } from './epic'
+import { createActionCreators } from './actionCreators'
 
 export interface IRootStoreList<T> {
     byId: {
@@ -65,6 +40,7 @@ export interface IOptions {
     rootName?: string
     rootList?: any
     pages?: IPageOption[]
+    api?: any
 }
 
 export interface IStoreListPages<T> {
@@ -87,7 +63,7 @@ export function createStoreList<T>(name: string, options: IOptions = {}) {
         : defaultRootState
 
     const types = createStoreListTypes(name)
-    const actionCreators = createStoreListActionCreators<T>(types)
+    const actionCreators = createActionCreators<T>(types)
     const selector = createStoreListSelector(name, options.rootName)
 
     const pages: IStoreListPages<T> = options.pages
@@ -118,6 +94,7 @@ export function createStoreList<T>(name: string, options: IOptions = {}) {
         name,
         types,
         selector,
+        epics: createEpic<T>(types, actionCreators, options.api),
         reducer: options.pages
             ? reducer
             : createStoreListPageReducer('default', types, {
@@ -140,7 +117,7 @@ export function createStoreListPage<T>(
 
     const types = createStoreListTypes(rootName + ' > ' + pageName)
 
-    const actionCreators = createStoreListActionCreators<T>(types)
+    const actionCreators = createActionCreators<T>(types)
 
     const reducer = createStoreListPageReducer(pageName, types, {
         defaultState,
@@ -161,6 +138,7 @@ export function createStoreListPage<T>(
         actionCreators,
         reducer,
         selector,
+        epics: createEpic<T>(types, actionCreators, options.api),
     }
 }
 

@@ -1,5 +1,5 @@
 import { IStoreItemActionTypes } from './createStoreItemTypes'
-import { Action } from './createStoreListActions'
+import { Action } from './actionCreators'
 
 export interface LOAD_ITEM extends Action {
     payload?: any
@@ -40,7 +40,20 @@ export type IActions<T> =
     | REMOVE_SUCCESS
     | REMOVE_FAILURE
 
-export function createStoreItemActionCreators<T>(types: IStoreItemActionTypes) {
+export interface IStoreItemActionCreators<T> {
+    loadItem(id: string | number): LOAD_ITEM
+    loadItemSuccess(payload: any): LOAD_ITEM_SUCCESS<T>
+    loadItemFailure(error: any): LOAD_ITEM_FAILURE
+    update(payload: T): UPDATE
+    updateSuccess(response: any): UPDATE_SUCCESS
+    updateFailure(error: any): UPDATE_FAILURE
+    remove(payload: T): REMOVE
+    removeSuccess(response: any): REMOVE_SUCCESS
+    removeFailure(error: any): REMOVE_FAILURE
+}
+export function createStoreItemActionCreators<T>(
+    types: IStoreItemActionTypes,
+): IStoreItemActionCreators<T> {
     return {
         loadItem(id: number | string): LOAD_ITEM {
             return {

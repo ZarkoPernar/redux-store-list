@@ -1,4 +1,4 @@
-import { IActions } from './createStoreListActions'
+import { IActions } from './actionCreators'
 import { IStoreListPage } from './createStoreList'
 
 export function createCombinedReducer<T>(

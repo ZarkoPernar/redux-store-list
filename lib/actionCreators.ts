@@ -101,7 +101,32 @@ export type IActions<T> =
     | RESTORE_SUCCESS
     | RESTORE_FAILURE
 
-export function createStoreListActionCreators<T>(types: IActionTypes) {
+export interface IActionCreators<T> {
+    loadList(params?: any): LOAD_LIST
+    loadListSuccess(payload: any): LOAD_LIST_SUCCESS<T>
+    loadListFailure(error: any): LOAD_LIST_FAILURE
+    loadItem(id: string | number): LOAD_ITEM
+    loadItemSuccess(payload: any): LOAD_ITEM
+    loadItemFailure(error: any): LOAD_ITEM_FAILURE
+    add(payload: T): ADD
+    addSuccess(originalPayload: any, response: any): ADD_SUCCESS
+    addFailure(error: any, payload: any): ADD_FAILURE
+    update(payload: T): UPDATE
+    updateSuccess(response: any): UPDATE_SUCCESS
+    updateFailure(error: any, payload: any): UPDATE_FAILURE
+    remove(payload: T): REMOVE
+    removeSuccess(response: any): REMOVE_SUCCESS
+    removeFailure(error: any, payload: any): REMOVE_FAILURE
+    trash(payload: T): TRASH
+    trashSuccess(response: any): TRASH_SUCCESS
+    trashFailure(error: any, payload: any): TRASH_FAILURE
+    restore(payload: T): RESTORE
+    restoreSuccess(response: any): RESTORE_SUCCESS
+    restoreFailure(error: any, payload: any): RESTORE_FAILURE
+}
+export function createActionCreators<T>(
+    types: IActionTypes,
+): IActionCreators<T> {
     return {
         loadList(params?: any): LOAD_LIST {
             return {

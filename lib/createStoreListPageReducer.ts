@@ -16,7 +16,7 @@ import {
     RESTORE,
     RESTORE_SUCCESS,
     RESTORE_FAILURE,
-} from './createStoreListActions'
+} from './actionCreators'
 import { IActionTypes } from './createStoreListTypes'
 import { toStoreList, toStoreListMerge } from './store.utils'
 import { IOptions, IRootStoreList, IStoreList } from './createStoreList'
