@@ -9,10 +9,10 @@ const firstPageName = 'projectList'
 const secondPageName = 'projectDetails'
 const pages = [firstPageName, { name: secondPageName, type: 'single' }]
 let defaultState
-
+const getEntityId = entity => entity.id
 describe('createStoreListPageReducer', () => {
     beforeEach(() => {
-        defaultState = createDefaultStateWithPages({ pages } as any)
+        defaultState = createDefaultStateWithPages(pages as any)
     })
 
     it('two page reducers executed in sequence return correct default state', () => {
@@ -21,17 +21,13 @@ describe('createStoreListPageReducer', () => {
             firstPageName,
             rootName,
             defaultState,
-            {
-                pages,
-            },
+            getEntityId,
         )
         const page2 = createStoreListPage(
             secondPageName,
             rootName,
             defaultState,
-            {
-                pages,
-            },
+            getEntityId,
         )
 
         let state
@@ -57,17 +53,13 @@ describe('createStoreListPageReducer', () => {
             firstPageName,
             rootName,
             defaultState,
-            {
-                pages,
-            },
+            getEntityId,
         )
         const secondPage = createStoreListPage(
             secondPageName,
             rootName,
             defaultState,
-            {
-                pages,
-            },
+            getEntityId,
         )
 
         const dataItem = { id: 1, name: 'Hello 1' }

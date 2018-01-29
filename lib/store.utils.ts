@@ -1,112 +1,124 @@
 import { createSelector } from 'reselect'
 
 export function createStoreListSelector(
-  storeName: string,
-  rootStoreName?: string,
+    storeName: string,
+    rootStoreName?: string,
 ) {
-  if (rootStoreName === undefined) {
+    if (rootStoreName === undefined) {
+        return createSelector(
+            state => state[storeName],
+            state => fromStoreList(state),
+        )
+    }
+
     return createSelector(
-      state => state[storeName],
-      state => fromStoreList(state),
+        state => state[rootStoreName],
+        state => state[storeName],
+        // combine
+        (rootState, state) => {
+            const byId = rootState.byId
+            const allIds = state.allIds
+
+            return fromStoreList({
+                allIds,
+                byId,
+            })
+        },
     )
-  }
-
-  return createSelector(
-    state => state[rootStoreName],
-    state => state[storeName],
-    // combine
-    (rootState, state) => {
-      const byId = rootState.byId
-      const allIds = state.allIds
-
-      return fromStoreList({
-        allIds,
-        byId,
-      })
-    },
-  )
 }
 export function createStoreItemSelector(
-  storeName: string,
-  rootStoreName?: string,
+    storeName: string,
+    rootStoreName?: string,
 ) {
-  if (rootStoreName === undefined) {
+    if (rootStoreName === undefined) {
+        return createSelector(
+            state => state[storeName].entity,
+            state => state.entity,
+        )
+    }
+
     return createSelector(
-      state => state[storeName].entity,
-      state => state.entity,
+        state => state[rootStoreName].byId,
+        state => state[storeName],
+        // combine
+        (byId, state) => {
+            if (!state.entity) return state.entity
+
+            return byId[state.entity.id]
+        },
     )
-  }
-
-  return createSelector(
-    state => state[rootStoreName].byId,
-    state => state[storeName],
-    // combine
-    (byId, state) => {
-      if (!state.entity) return state.entity
-
-      return byId[state.entity.id]
-    },
-  )
 }
-function createToIds(idPropName: string) {
-  return function toIds(item) {
-    return item[idPropName]
-  }
+export function createToIds(getEntityId: Function) {
+    return function toIds(item: any) {
+        return getEntityId(item)
+    }
 }
-export function createToHash(idPropName: string) {
-  return function toHash(hash, item) {
-    hash[item[idPropName]] = item
-    return hash
-  }
+export function createToHash(getEntityId: Function) {
+    return function toHash(hash: any, item: any) {
+        hash[getEntityId(item)] = item
+        return hash
+    }
 }
 export function toHash(hash, item) {
-  hash[item.id] = item
-  return hash
+    hash[item.id] = item
+    return hash
 }
 
 function toIds(item) {
-  return item.id
+    return item.id
 }
 
 function toItems(id) {
-  return this[id]
+    return this[id]
 }
 
-export function toStoreListMerge(array = [], state, idPropName: string = 'id') {
-  const allIds = Array.isArray(state.allIds) ? [...state.allIds] : []
-  const byId = state.byId !== undefined ? { ...state.byId } : {}
+export function toStoreListMerge(
+    array = [],
+    state: any,
+    getEntityId: Function,
+) {
+    const allIds = Array.isArray(state.allIds) ? [...state.allIds] : []
+    const byId = state.byId !== undefined ? { ...state.byId } : {}
 
-  for (let index = 0; index < array.length; index++) {
-    let element = array[index]
+    for (let index = 0; index < array.length; index++) {
+        let element = array[index]
 
-    if (byId[element[idPropName]] === undefined) {
-      allIds.push(element[idPropName])
+        if (byId[getEntityId(element)] === undefined) {
+            allIds.push(getEntityId(element))
+        }
+
+        byId[getEntityId(element)] = element
     }
 
-    byId[element[idPropName]] = element
-  }
-
-  return { allIds, byId }
+    return { allIds, byId }
 }
 
-export function toStoreList(arr = [], idPropName?: string) {
-  return {
-    allIds: arr.map(idPropName === undefined ? toIds : createToIds(idPropName)),
-    byId: arr.reduce(
-      idPropName === undefined ? toHash : createToHash(idPropName),
-      {},
-    ),
-  }
+export function toStoreList(arr = [], getEntityId: Function) {
+    return {
+        allIds: arr.map(
+            getEntityId === undefined ? toIds : createToIds(getEntityId),
+        ),
+        byId: arr.reduce(
+            getEntityId === undefined ? toHash : createToHash(getEntityId),
+            {},
+        ),
+    }
 }
 
 export function fromStoreList({
-  allIds,
-  byId,
+    allIds,
+    byId,
 }: {
-  allIds?: number[]
-  byId?: any
+    allIds?: number[]
+    byId?: any
 }) {
-  const ids = allIds || []
-  const items = byId || {}
-  return ids.map(toItems, items)
+    const ids = allIds || []
+    const items = byId || {}
+    return ids.map(toItems, items)
+}
+
+export function createTrackingFunction(propName: string) {
+    return function getEntityId(entity: any) {
+        return entity[propName]
+    }
 }

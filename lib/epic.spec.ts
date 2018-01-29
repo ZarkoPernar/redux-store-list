@@ -8,7 +8,9 @@ import * as configureMockStore from 'redux-mock-store'
 import { createEpicMiddleware, combineEpics } from 'redux-observable'
 import { createStoreList } from './createStoreList'
 
-const entity = { id: 1, name: 'Test Item' }
+const entity = { _id: 1, name: 'Test Item' }
+const addResponse = { _id: 2, name: 'Test Item' }
+const addError = { status: 412, message: 'Validation error' }
 const payload = { data: [entity] }
 const api = {
     loadList: ({ withError } = { withError: false }) => {
@@ -18,16 +20,23 @@ const api = {
 
         return of(payload)
     },
+
+    add: ({ withError }) => {
+        if (withError) {
+            return Observable.throw(addError)
+        }
+
+        return of(addResponse)
+    },
 }
-const storeList = createStoreList('test', { api })
-const rootEpic = combineEpics(...storeList.epics)
-const epicMiddleware = createEpicMiddleware(rootEpic)
+const storeList = createStoreList('test', { api, getEntityId: '_id' })
+const epicMiddleware = createEpicMiddleware(storeList.epic)
 const mockStore = configureMockStore([epicMiddleware])
 const middleware = applyMiddleware(epicMiddleware)
 
 describe('createEpic', () => {
-    it('returns an erray of epics', () => {
-        expect(storeList.epics).toBeInstanceOf(Array)
+    it('epic is a function', () => {
+        expect(storeList.epic).toBeInstanceOf(Function)
     })
 })
 
@@ -39,10 +48,10 @@ describe('epic', () => {
     })
 
     afterEach(() => {
-        epicMiddleware.replaceEpic(rootEpic)
+        epicMiddleware.replaceEpic(storeList.epic)
     })
 
-    it('produces the data on success', () => {
+    it('produces the data on loadList success', () => {
         store.dispatch(storeList.actionCreators.loadList())
 
         expect(store.getActions()).toEqual([
@@ -51,7 +60,7 @@ describe('epic', () => {
         ])
     })
 
-    it('produces the error on failure', () => {
+    it('produces the error on loadList failure', () => {
         store.dispatch(storeList.actionCreators.loadList({ withError: true }))
 
         expect(store.getActions()).toEqual([
@@ -60,19 +69,58 @@ describe('epic', () => {
         ])
     })
 
-    it('store data on success', () => {
+    it('produces the data on add success', () => {
+        store.dispatch(storeList.actionCreators.add(entity))
+
+        expect(store.getActions()).toEqual([
+            storeList.actionCreators.add(entity),
+            storeList.actionCreators.addSuccess(entity, addResponse),
+        ])
+    })
+
+    it('produces the error on add failure', () => {
+        store.dispatch(
+            storeList.actionCreators.add({ ...entity, withError: true }),
+        )
+
+        expect(store.getActions()).toEqual([
+            storeList.actionCreators.add({ ...entity, withError: true }),
+            storeList.actionCreators.addFailure(addError, {
+                ...entity,
+                withError: true,
+            }),
+        ])
+    })
+
+    it('produces correct store data on loadList success', () => {
         const store = createStore(storeList.reducer, undefined, middleware)
         store.dispatch(storeList.actionCreators.loadList())
 
         expect(store.getState()).toEqual({
             byId: {
-                [entity.id]: entity,
+                [entity._id]: entity,
             },
-            allIds: [entity.id],
+            allIds: [entity._id],
             isLoading: false,
             response: {
                 data: [entity],
             },
+        })
+    })
+
+    it('produces correct store data on add success', () => {
+        const store = createStore(storeList.reducer, undefined, middleware)
+        store.dispatch(storeList.actionCreators.add(entity))
+
+        expect(store.getState()).toEqual({
+            byId: {
+                [addResponse._id]: {
+                    ...entity,
+                    ...addResponse,
+                },
+            },
+            isUpdating: false,
+            allIds: [addResponse._id],
         })
     })
 })

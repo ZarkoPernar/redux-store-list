@@ -2,8 +2,8 @@ import { createSelector } from 'reselect'
 
 import { createStoreListTypes, IActionTypes } from './createStoreListTypes'
 
-import { createStoreListSelector } from './store.utils'
-import { createStoreListPageReducer } from './createStoreListPageReducer'
+import { createStoreListSelector, createTrackingFunction } from './store.utils'
+import { createReducer } from './reducer'
 
 import { createCombinedReducer } from './createCombinedReducer'
 import { createStoreItem } from './createStoreItem'
@@ -11,21 +11,20 @@ import { fromStoreList } from './store.utils'
 import { createEpic } from './epic'
 import { createActionCreators } from './actionCreators'
 
+const DEFAULT_ID_PROP_NAME = 'id'
+
 export interface IRootStoreList<T> {
     byId: {
         [id: number]: T
     }
 }
-export interface IStoreList<T> extends IRootStoreList<T> {
-    allIds: number[]
-    isLoading?: boolean
-    error?: Error
-}
 export interface IStoreListPartial {
-    allIds: number[]
+    allIds: Array<number | string>
     isLoading?: boolean
     error?: Error
 }
+
+export interface IStoreList<T> extends IRootStoreList<T>, IStoreListPartial {}
 
 export type IPageType = 'single' | 'list'
 
@@ -36,11 +35,12 @@ export type IPageOption =
           type: IPageType
       }
 
+export type ITrackingFunction = (entity: any) => string | number
+
 export interface IOptions {
-    rootName?: string
-    rootList?: any
     pages?: IPageOption[]
     api?: any
+    getEntityId?: ITrackingFunction | string
 }
 
 export interface IStoreListPages<T> {
@@ -58,13 +58,23 @@ const defaultRootState = { byId: {}, allIds: [] }
 
 export function createStoreList<T>(name: string, options: IOptions = {}) {
     // const symbol = Symbol(name)
+    let getEntityId: ITrackingFunction
+    if (options.getEntityId) {
+        getEntityId =
+            typeof options.getEntityId === 'function'
+                ? options.getEntityId
+                : createTrackingFunction(options.getEntityId)
+    } else {
+        getEntityId = createTrackingFunction(DEFAULT_ID_PROP_NAME)
+    }
+
     const defaultState = options.pages
         ? createDefaultStateWithPages(options.pages)
         : defaultRootState
 
     const types = createStoreListTypes(name)
     const actionCreators = createActionCreators<T>(types)
-    const selector = createStoreListSelector(name, options.rootName)
+    const selector = createStoreListSelector(name)
 
     const pages: IStoreListPages<T> = options.pages
         ? options.pages.reduce((acc, page) => {
@@ -79,6 +89,7 @@ export function createStoreList<T>(name: string, options: IOptions = {}) {
                                 page,
                                 name,
                                 defaultState,
+                                getEntityId,
                                 options,
                             )
                           : createStoreItem(pageName, name, defaultState),
@@ -94,12 +105,13 @@ export function createStoreList<T>(name: string, options: IOptions = {}) {
         name,
         types,
         selector,
-        epics: createEpic<T>(types, actionCreators, options.api),
+        epic: createEpic<T>(types, actionCreators, options.api),
         reducer: options.pages
             ? reducer
-            : createStoreListPageReducer('default', types, {
-                  hasPages: false,
+            : createReducer({
+                  types,
                   defaultState,
+                  getEntityId,
               }),
         actionCreators,
         pages,
@@ -110,7 +122,8 @@ export function createStoreListPage<T>(
     pageOption: IPageOption,
     rootName: string,
     defaultState: any,
-    options: IOptions,
+    getEntityId: ITrackingFunction,
+    options: IOptions = {},
 ) {
     const pageName = getPageName(pageOption)
     const pageType = getPageType(pageOption)
@@ -119,9 +132,11 @@ export function createStoreListPage<T>(
 
     const actionCreators = createActionCreators<T>(types)
 
-    const reducer = createStoreListPageReducer(pageName, types, {
+    const reducer = createReducer({
+        pageName,
+        types,
         defaultState,
-        hasPages: Boolean(options.pages),
+        getEntityId,
     })
 
     const selector = createSelector(
@@ -138,7 +153,7 @@ export function createStoreListPage<T>(
         actionCreators,
         reducer,
         selector,
-        epics: createEpic<T>(types, actionCreators, options.api),
+        epic: createEpic<T>(types, actionCreators, options.api),
     }
 }
 

@@ -21,13 +21,21 @@ import { IActionTypes } from './createStoreListTypes'
 import { toStoreList, toStoreListMerge } from './store.utils'
 import { IOptions, IRootStoreList, IStoreList } from './createStoreList'
 
-export function createStoreListPageReducer<T>(
-    pageName: string,
-    types: IActionTypes,
-    { hasPages, defaultState }: { hasPages: boolean; defaultState: any },
-) {
-    const getState = hasPages ? getPageState : getFlatState
-    const combineStateAndPage = hasPages ? assignPageState : assignFlatState
+export interface ICreateReducerOptions {
+    pageName?: string
+    types: IActionTypes
+    defaultState: any
+    getEntityId(entity: any): string | number
+}
+
+export function createReducer<T>({
+    pageName,
+    types,
+    defaultState,
+    getEntityId,
+}: ICreateReducerOptions) {
+    const getState = pageName ? getPageState : getFlatState
+    const combineStateAndPage = pageName ? assignPageState : assignFlatState
 
     return function reducer(state = defaultState, anyAction: IActions<T>) {
         let action
@@ -69,7 +77,7 @@ export function createStoreListPageReducer<T>(
                         ...state,
                         byId: {
                             ...state.byId,
-                            [action.payload.id]: action.payload,
+                            [getEntityId(action.payload)]: action.payload,
                         },
                     },
                     {
@@ -168,12 +176,13 @@ export function createStoreListPageReducer<T>(
         return combineStateAndPage(
             {
                 ...state,
-                byId: toStoreListMerge(action.payload.data, state).byId,
+                byId: toStoreListMerge(action.payload.data, state, getEntityId)
+                    .byId,
             },
             {
                 isLoading: false,
                 response: action.payload,
-                allIds: toStoreList(action.payload.data).allIds,
+                allIds: toStoreList(action.payload.data, getEntityId).allIds,
             },
         )
     }
@@ -184,12 +193,12 @@ export function createStoreListPageReducer<T>(
                 ...state,
                 byId: {
                     ...state.byId,
-                    [payload.id]: payload,
+                    [getEntityId(payload)]: payload,
                 },
             },
             {
                 isUpdating: true,
-                allIds: [...getState(state).allIds, payload.id],
+                allIds: [...getState(state).allIds, getEntityId(payload)],
             },
         )
     }
@@ -199,8 +208,8 @@ export function createStoreListPageReducer<T>(
             ...state,
             byId: {
                 ...state.byId,
-                [payload.id]: {
-                    ...state.byId[payload.id],
+                [getEntityId(payload)]: {
+                    ...state.byId[getEntityId(payload)],
                     ...payload,
                 },
             },
@@ -216,11 +225,11 @@ export function createStoreListPageReducer<T>(
             },
         }
 
-        delete nextState.byId[action.payload.id]
+        delete nextState.byId[getEntityId(action.payload)]
 
         return combineStateAndPage(nextState, {
             allIds: getState(nextState).allIds.filter(
-                id => id !== action.payload.id,
+                id => id !== getEntityId(action.payload),
             ),
         })
     }
@@ -242,22 +251,24 @@ export function createStoreListPageReducer<T>(
     }
 
     function handleAddSuccess(state, { response, originalPayload }) {
+        const originalId = getEntityId(originalPayload)
+        const newId = getEntityId(response)
+
         const allIds = [...getState(state).allIds]
         const nextState = {
             ...state,
             byId: {
                 ...state.byId,
-                [response.id]: response,
+                [newId]: {
+                    ...state.byId[newId],
+                    ...response,
+                },
             },
         }
         // delete entity with offline id
-        delete nextState.byId[originalPayload.id]
+        delete nextState.byId[originalId]
 
-        allIds.splice(
-            getState(nextState).allIds.indexOf(originalPayload.id),
-            1,
-            response.id,
-        )
+        allIds.splice(getState(nextState).allIds.indexOf(originalId), 1, newId)
 
         return combineStateAndPage(nextState, {
             isUpdating: false,

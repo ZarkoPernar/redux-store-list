@@ -4,7 +4,7 @@ import { of } from 'rxjs/observable/of'
 import { from } from 'rxjs/observable/from'
 import { fromPromise } from 'rxjs/observable/fromPromise'
 import 'rxjs/add/operator/do'
-import { ActionsObservable } from 'redux-observable'
+import { ActionsObservable, combineEpics } from 'redux-observable'
 
 import {
     IActionCreators,
@@ -23,7 +23,7 @@ export function createEpic<T>(
     actionCreators: IActionCreators<T>,
     api: any,
 ) {
-    return [loadListEpic, addEpic, updateEpic, removeEpic]
+    return combineEpics(loadListEpic, addEpic, updateEpic, removeEpic)
 
     function loadListEpic(
         action$: ActionsObservable<LOAD_LIST>,
