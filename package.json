@@ -1,6 +1,6 @@
 {
     "name": "redux-store-list",
-    "version": "0.2.1",
+    "version": "0.2.4",
     "description":
         "Set of utilities for quickly creating lists of entities, along with reducers, types, and action creators",
     "main": "redux-store-list.cjs.js",

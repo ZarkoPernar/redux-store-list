@@ -13,10 +13,18 @@ module.exports = {
         format: 'cjs',
         file: PATH_DIST + nameLibrary + '.cjs.js',
     },
-    // external: ['reselect', 'rxjs', 'redux-observable'],
-    external(id) {
-        return id.indexOf('node_modules') >= 0
-    },
+    external: [
+        'reselect',
+        'redux-observable',
+        'rxjs/operators',
+        'rxjs/observable/of',
+        'rxjs/observable/from',
+        'rxjs/add/operator/do',
+        'rxjs/Observable',
+    ],
+    // external(id) {
+    //     return id.indexOf('node_modules') >= 0
+    // },
 
     plugins: [
         typescript({
