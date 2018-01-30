@@ -10,7 +10,7 @@ npm i redux-store-list
 
 # Get Started
 
-```
+```javascript
 // example.js
 import { createStoreList } from 'redux-store-list'
 
@@ -43,7 +43,7 @@ store.dispatch(exampleList.actionCreators.loadListSuccess(response))
 
 # With Epic
 
-```
+```javascript
 // example.js
 import { createStoreList } from 'redux-store-list'
 
@@ -90,7 +90,7 @@ store.dispatch(exampleList.actionCreators.loadList())
 
 # Options
 
-```
+```javascript
     createStoreList('name', {
         getEntityId: '_id' || (entity) => entity.some_id_field,
         api: {
