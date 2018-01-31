@@ -1,14 +1,14 @@
-# Description
+# Redux Store List
 
 Set of utilities for quickly creating lists of entities, along with reducers, types, and action creators
 
-# Installation
+## Installation
 
 ```
 npm i redux-store-list
 ```
 
-# Get Started
+## Get Started
 
 ```javascript
 // example.js
@@ -41,7 +41,7 @@ store.dispatch(exampleList.actionCreators.loadListSuccess(response))
 // }
 ```
 
-# With Epic
+## With Epic
 
 ```javascript
 // example.js
@@ -50,7 +50,8 @@ import { createStoreList } from 'redux-store-list'
 export const exampleList = createStoreList('example', {
     api: {
         loadList() {
-            const res = await fetch('/api/list').then(res => res.json()) // { data: [{id: 1, name: 'Example Entity 1'}] }
+            const res = await fetch('/api/list').then(res => res.json())
+            // { data: [{id: 1, name: 'Example Entity 1'}] }
             return res
         }
     }
@@ -88,7 +89,7 @@ store.dispatch(exampleList.actionCreators.loadList())
 // }
 ```
 
-# Options
+## Options
 
 ```javascript
     createStoreList('name', {
