@@ -8,7 +8,6 @@ import { createReducer } from './reducer'
 import { createCombinedReducer } from './createCombinedReducer'
 import { createStoreItem } from './createStoreItem'
 import { fromStoreList } from './store.utils'
-import { createEpic } from './epic'
 import { createActionCreators } from './actionCreators'
 
 const DEFAULT_ID_PROP_NAME = 'id'
@@ -39,7 +38,6 @@ export type ITrackingFunction = (entity: any) => string | number
 
 export interface IOptions {
     pages?: IPageOption[]
-    api?: any
     getEntityId?: ITrackingFunction | string
 }
 
@@ -105,7 +103,6 @@ export function createStoreList<T>(name: string, options: IOptions = {}) {
         name,
         types,
         selector,
-        epic: createEpic<T>(types, actionCreators, options.api),
         reducer: options.pages
             ? reducer
             : createReducer({
@@ -153,7 +150,6 @@ export function createStoreListPage<T>(
         actionCreators,
         reducer,
         selector,
-        epic: createEpic<T>(types, actionCreators, options.api),
     }
 }
 

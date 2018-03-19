@@ -6,7 +6,9 @@ import { createStore, applyMiddleware } from 'redux'
 // import * as nock from 'nock'
 import * as configureMockStore from 'redux-mock-store'
 import { createEpicMiddleware, combineEpics } from 'redux-observable'
+
 import { createStoreList } from './createStoreList'
+import { createEpic } from './epic'
 
 const entity = { _id: 1, name: 'Test Item' }
 const addResponse = { _id: 2, name: 'Test Item' }
@@ -30,13 +32,14 @@ const api = {
     },
 }
 const storeList = createStoreList('test', { api, getEntityId: '_id' })
-const epicMiddleware = createEpicMiddleware(storeList.epic)
+const epic = createEpic(storeList, api)
+const epicMiddleware = createEpicMiddleware(epic)
 const mockStore = configureMockStore([epicMiddleware])
 const middleware = applyMiddleware(epicMiddleware)
 
 describe('createEpic', () => {
     it('epic is a function', () => {
-        expect(storeList.epic).toBeInstanceOf(Function)
+        expect(epic).toBeInstanceOf(Function)
     })
 })
 
@@ -48,7 +51,7 @@ describe('epic', () => {
     })
 
     afterEach(() => {
-        epicMiddleware.replaceEpic(storeList.epic)
+        epicMiddleware.replaceEpic(epic)
     })
 
     it('produces the data on loadList success', () => {

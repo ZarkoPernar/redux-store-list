@@ -15,7 +15,9 @@ npm i redux-store-list
 import { createStoreList } from 'redux-store-list'
 
 export const exampleList = createStoreList('example')
+```
 
+```javascript
 // appStore.js
 import { createStore } from 'redux'
 import { exampleList } from './example.js'
@@ -46,24 +48,27 @@ store.dispatch(exampleList.actionCreators.loadListSuccess(response))
 ```javascript
 // example.js
 import { createStoreList } from 'redux-store-list'
+import { createEpic } from 'redux-store-list/epic'
 
-export const exampleList = createStoreList('example', {
-    api: {
-        loadList() {
-            const res = await fetch('/api/list').then(res => res.json())
-            // { data: [{id: 1, name: 'Example Entity 1'}] }
-            return res
-        }
+export const exampleList = createStoreList('example')
+
+export const exampleEpic = createEpic(exampleList, {
+    loadList() {
+        const res = await fetch('/api/list').then(res => res.json())
+        // { data: [{id: 1, name: 'Example Entity 1'}] }
+        return res
     }
 })
+```
 
+```javascript
 // appStore.js
 import { createStore, applyMiddleware } from 'redux'
 import { combineEpics, createEpicMiddleware } from 'redux-observable'
-import { exampleList } from './example.js'
+import { exampleList, exampleEpic } from './example.js'
 
 const epics = combineEpics(
-    exampleList.epic,
+    exampleEpic,
     // ...other epics
 )
 const epicMiddleware = createEpicMiddleware(epics)

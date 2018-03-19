@@ -9,6 +9,9 @@ export interface LOAD_LIST extends Action {
 }
 export interface LOAD_LIST_SUCCESS<T> extends Action {
     payload: T
+    meta?: {
+        merge?: boolean
+    }
 }
 export interface LOAD_LIST_FAILURE extends Action {
     error: Error
@@ -23,7 +26,7 @@ export interface LOAD_ITEM_FAILURE extends Action {
     error: Error
 }
 export interface ADD extends Action {
-    payload: any
+    payload: any | any[]
 }
 export interface ADD_SUCCESS extends Action {
     payload: any
@@ -45,8 +48,8 @@ export interface UPDATE_FAILURE extends Action {
     error: any
     payload: any
 }
-export interface REMOVE extends Action {
-    payload: any
+export interface REMOVE<T> extends Action {
+    payload: T | T[]
 }
 export interface REMOVE_SUCCESS extends Action {
     payload: any
@@ -91,7 +94,7 @@ export type IActions<T> =
     | UPDATE
     | UPDATE_SUCCESS
     | UPDATE_FAILURE
-    | REMOVE
+    | REMOVE<T>
     | REMOVE_SUCCESS
     | REMOVE_FAILURE
     | TRASH
@@ -103,7 +106,7 @@ export type IActions<T> =
 
 export interface IActionCreators<T> {
     loadList(params?: any): LOAD_LIST
-    loadListSuccess(payload: any): LOAD_LIST_SUCCESS<T>
+    loadListSuccess(payload: any, meta?: any): LOAD_LIST_SUCCESS<T>
     loadListFailure(error: any): LOAD_LIST_FAILURE
     loadItem(id: string | number): LOAD_ITEM
     loadItemSuccess(payload: any): LOAD_ITEM
@@ -114,7 +117,7 @@ export interface IActionCreators<T> {
     update(payload: T): UPDATE
     updateSuccess(response: any): UPDATE_SUCCESS
     updateFailure(error: any, payload: any): UPDATE_FAILURE
-    remove(payload: T): REMOVE
+    remove(payload: T): REMOVE<T>
     removeSuccess(response: any): REMOVE_SUCCESS
     removeFailure(error: any, payload: any): REMOVE_FAILURE
     trash(payload: T): TRASH
@@ -134,10 +137,11 @@ export function createActionCreators<T>(
                 payload: params,
             }
         },
-        loadListSuccess(payload: any): LOAD_LIST_SUCCESS<T> {
+        loadListSuccess(payload: any, meta?: any): LOAD_LIST_SUCCESS<T> {
             return {
                 type: types.LOAD_LIST_SUCCESS,
                 payload,
+                meta,
             }
         },
         loadListFailure(error: any): LOAD_LIST_FAILURE {
@@ -211,7 +215,7 @@ export function createActionCreators<T>(
             }
         },
 
-        remove(payload: T): REMOVE {
+        remove(payload: T): REMOVE<T> {
             return {
                 type: types.REMOVE,
                 payload,

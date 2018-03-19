@@ -1,9 +1,11 @@
-import { Observable } from 'rxjs/Observable'
-import { switchMap, map, catchError, mergeMap } from 'rxjs/operators'
-import { of } from 'rxjs/observable/of'
+import { Observable } from 'rxjs'
+import { mergeMap } from 'rxjs/operators/mergeMap'
 import { from } from 'rxjs/observable/from'
-import { fromPromise } from 'rxjs/observable/fromPromise'
-import 'rxjs/add/operator/do'
+import { map } from 'rxjs/operators/map'
+import { catchError } from 'rxjs/operators/catchError'
+export { Observable } from 'rxjs/Observable'
+export { ActionsObservable } from 'redux-observable'
+import { of } from 'rxjs/observable/of'
 import { ActionsObservable, combineEpics } from 'redux-observable'
 
 import {
@@ -15,13 +17,22 @@ import {
 } from './actionCreators'
 import { IActionTypes } from './createStoreListTypes'
 
-export { Observable } from 'rxjs/Observable'
-export { ActionsObservable } from 'redux-observable'
+export interface IApi {
+    loadList?(params: any): Promise<any> | Observable<any>
+    add?(payload: any): Promise<any> | Observable<any>
+    update?(payload: any): Promise<any> | Observable<any>
+    remove?(payload: any): Promise<any> | Observable<any>
+}
 
 export function createEpic<T>(
-    types: IActionTypes,
-    actionCreators: IActionCreators<T>,
-    api: any,
+    {
+        types,
+        actionCreators,
+    }: {
+        types: IActionTypes
+        actionCreators: IActionCreators<T>
+    },
+    api: IApi,
 ) {
     return combineEpics(loadListEpic, addEpic, updateEpic, removeEpic)
 
@@ -87,7 +98,7 @@ export function createEpic<T>(
     }
 
     function removeEpic(
-        action$: ActionsObservable<REMOVE>,
+        action$: ActionsObservable<REMOVE<T>>,
         // store: any,
         // dependencies: any,
     ) {
@@ -107,15 +118,3 @@ export function createEpic<T>(
         )
     }
 }
-
-// export function userInfoEpic(action$) {
-//     return action$
-//         .ofType(LOAD_USER_INFO)
-//         .mergeMap(() => Observable.from(
-//             apiService.get('/user/userInfo')
-//                 .then(payload => ({
-//                     type: LOAD_USER_INFO_SUCCESS,
-//                     payload
-//                 }))
-//         ))
-// }
