@@ -13,7 +13,8 @@
             "rimraf dist && rollup -c rollup.config.cjs.js && rollup -c rollup.config.esm.js",
         "build": "npm run bundle && npm run copy",
         "publish": "cd ./dist && npm publish",
-        "test": "jest --watch"
+        "test": "jest --watch",
+        "test:ci": "jest"
     },
     "repository": {
         "type": "git",
